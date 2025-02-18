@@ -7,68 +7,101 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
+	import ScoreModal from './ScoreModal.svelte';
+	import type { ScoreItem, GameRound } from '$lib/types/coiffeur-types';
+	import roundsData from '$lib/data/coiffeur10.json';
 
-	let items = [
-		{
-			mode: 'Herz',
-			multiplicator: 1,
-			score1: 157,
-			score2: 157
-		},
-		{
-			mode: 'Kreuz',
-			multiplicator: 2,
-			score1: 157,
-			score2: 0
+	let rounds: GameRound[] = roundsData;
+
+	let score: ScoreItem;
+	let multiplicator: number;
+	let scoreModalRef: ScoreModal;
+
+	let team1Total = 0;
+	let team2Total = 0;
+	$: {
+		team1Total = rounds.reduce((sum, round) => sum + round.score1.scoreMultiplied, 0);
+		team2Total = rounds.reduce((sum, round) => sum + round.score2.scoreMultiplied, 0);
+	}
+
+	function handleScoreChange(event: CustomEvent<ScoreItem>) {
+		if (score) {
+			score.score = event.detail.score;
+			score.scoreMultiplied = event.detail.scoreMultiplied;
+			rounds = [...rounds];
 		}
-	];
+	}
 
-	const calculateScore = (team: number): number => {
-		return items.map((x) => (team === 1 ? x.score1 : x.score2)).reduce((p, x) => p + x, 0);
+	const openScoreModal = (s: ScoreItem, m: number) => {
+		score = s;
+		multiplicator = m;
+		scoreModalRef.open();
 	};
-
-	$: team1Score = calculateScore(1);
-	$: team2Score = calculateScore(2);
 </script>
 
-<Table {items}>
+<Table items={rounds}>
 	<TableHead>
 		<TableHeadCell></TableHeadCell>
+		<TableHeadCell>Mul</TableHeadCell>
 		<TableHeadCell>Team 1</TableHeadCell>
 		<TableHeadCell>Team 2</TableHeadCell>
 	</TableHead>
 	<TableBody tableBodyClass="divide-y">
-		{#each items as item}
+		{#each rounds as round}
 			<TableBodyRow>
-				<TableBodyCell>{item.mode}</TableBodyCell>
-				<TableBodyCell>{item.score1}</TableBodyCell>
-				<TableBodyCell>{item.score2}</TableBodyCell>
+				<TableBodyCell>{round.mode}</TableBodyCell>
+				<TableBodyCell>{round.multiplicator}</TableBodyCell>
+				<TableBodyCell>
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						on:click={() => openScoreModal(round.score1, round.multiplicator)}
+						class="flex cursor-pointer items-center gap-4"
+					>
+						<span class="inline-block w-[3ch]">{round.score1.score}</span>
+						<span class="inline-block w-[3ch]">{round.score1.scoreMultiplied}</span>
+					</div>
+				</TableBodyCell>
+				<TableBodyCell>
+					<!-- svelte-ignore a11y_click_events_have_key_events -->
+					<!-- svelte-ignore a11y_no_static_element_interactions -->
+					<div
+						on:click={() => openScoreModal(round.score2, round.multiplicator)}
+						class="flex cursor-pointer items-center gap-4"
+					>
+						<span class="inline-block w-[3ch]">{round.score2.score}</span>
+						<span class="inline-block w-[3ch]">{round.score2.scoreMultiplied}</span>
+					</div>
+				</TableBodyCell>
 			</TableBodyRow>
 		{/each}
 		<TableBodyRow>
 			<TableBodyCell>Total</TableBodyCell>
+			<TableBodyCell></TableBodyCell>
 			<TableBodyCell>
 				<span
-					class={team1Score > team2Score
+					class={team1Total > team2Total
 						? 'text-green-500'
-						: team1Score < team2Score
+						: team1Total < team2Total
 							? 'text-red-500'
-							: 'text-black'}
+							: 'text-white'}
 				>
-					{team1Score}
+					{team1Total}
 				</span>
 			</TableBodyCell>
 			<TableBodyCell>
 				<span
-					class={team2Score > team1Score
+					class={team2Total > team1Total
 						? 'text-green-500'
-						: team2Score < team1Score
+						: team2Total < team1Total
 							? 'text-red-500'
-							: 'text-black'}
+							: 'text-white'}
 				>
-					{team2Score}
+					{team2Total}
 				</span>
 			</TableBodyCell>
 		</TableBodyRow>
 	</TableBody>
 </Table>
+
+<ScoreModal bind:this={scoreModalRef} {score} {multiplicator} on:scoreChange={handleScoreChange} />
