@@ -42,21 +42,22 @@
 <Table items={rounds}>
 	<TableHead>
 		<TableHeadCell></TableHeadCell>
-		<TableHeadCell>Mul</TableHeadCell>
 		<TableHeadCell>Team 1</TableHeadCell>
 		<TableHeadCell>Team 2</TableHeadCell>
 	</TableHead>
 	<TableBody tableBodyClass="divide-y">
 		{#each rounds as round}
 			<TableBodyRow>
-				<TableBodyCell>{round.mode}</TableBodyCell>
-				<TableBodyCell>{round.multiplicator}</TableBodyCell>
+				<TableBodyCell>
+					<span class="inline-block w-[3ch]">x{round.multiplicator}</span>
+					<span>{round.mode}</span>
+				</TableBodyCell>
 				<TableBodyCell>
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
 						on:click={() => openScoreModal(round.score1, round.multiplicator)}
-						class="flex cursor-pointer items-center gap-4"
+						class="flex cursor-pointer items-center gap-2"
 					>
 						<span class="inline-block w-[3ch]">{round.score1.score}</span>
 						<span class="inline-block w-[3ch]">{round.score1.scoreMultiplied}</span>
@@ -67,7 +68,7 @@
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
 						on:click={() => openScoreModal(round.score2, round.multiplicator)}
-						class="flex cursor-pointer items-center gap-4"
+						class="flex cursor-pointer items-center gap-2"
 					>
 						<span class="inline-block w-[3ch]">{round.score2.score}</span>
 						<span class="inline-block w-[3ch]">{round.score2.scoreMultiplied}</span>
@@ -77,7 +78,6 @@
 		{/each}
 		<TableBodyRow>
 			<TableBodyCell>Total</TableBodyCell>
-			<TableBodyCell></TableBodyCell>
 			<TableBodyCell>
 				<span
 					class={team1Total > team2Total
