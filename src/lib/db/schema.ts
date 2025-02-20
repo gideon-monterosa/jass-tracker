@@ -1,9 +1,12 @@
+import type { InferModel } from "drizzle-orm";
 import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
 
 export const playersTable = pgTable("players", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity(),
 	name: varchar({ length: 255 }).notNull(),
 });
+
+export type Player = InferModel<typeof playersTable>;
 
 export const gamesTable = pgTable("games", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity(),
