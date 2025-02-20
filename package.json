@@ -11,7 +11,11 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"lint": "prettier --check . && eslint .",
+		"studio": "bunx drizzle-kit studio",
+		"studio:prod": "bunx drizzle-kit studio --config=drizzle-prod.config.ts",
+		"push": "bunx drizzle-kit push",
+		"push:prod": "bunx drizzle-kit push --config=drizzle-prod.config.ts"
 	},
 	"dependencies": {
 		"@types/pg": "^8.11.11",
