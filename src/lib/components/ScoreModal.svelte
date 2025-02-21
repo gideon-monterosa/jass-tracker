@@ -24,9 +24,13 @@
 	}
 
 	$: yourScore = 157 - (opponentScore ?? 0);
+
+	function closed() {
+		dispatch('close');
+	}
 </script>
 
-<Modal bind:open={isOpen} size="md">
+<Modal on:close={closed} bind:open={isOpen} size="md">
 	<h3 slot="header" class="text-lg font-semibold">Score Details</h3>
 	<div class="mb-4 text-lg">Current Score: {score.score}</div>
 	<div class="mb-4 text-lg">Current Score Multiplied: {score.scoreMultiplied}</div>

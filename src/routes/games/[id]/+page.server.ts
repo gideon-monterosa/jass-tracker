@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { gamesTable, gamePlayersTable, playersTable, roundModesTable, roundsTable } from '$lib/db/schema';
+import { gamesTable, gamePlayersTable, playersTable } from '$lib/db/schema';
 import { eq } from 'drizzle-orm';
 import type { PageServerLoad } from '../$types';
 import { db } from '$lib/db';
@@ -51,8 +51,10 @@ export const load: PageServerLoad = async ({ params }: any) => {
     const team2 = gamePlayers.filter((gp) => gp.team === 'team2').map(p => p.playerName).join(' & ');
 
     return {
+        gameId,
         gameRounds,
         team1,
         team2
     };
 };
+

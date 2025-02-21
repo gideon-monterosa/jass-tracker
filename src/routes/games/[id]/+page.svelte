@@ -14,12 +14,14 @@
 
 	export let data: PageData;
 
-	const { gameRounds, team1, team2 } = data;
+	const { gameId, gameRounds, team1, team2 } = data;
 
 	let rounds: GameRound[] = gameRounds;
 
-	let score: ScoreItem;
-	let multiplicator: number;
+	let selectedRound: GameRound;
+	let selectedScore: ScoreItem;
+	let selectedTeam: 'team1' | 'team2';
+	let selectedMultiplicator: number;
 	let scoreModalRef: ScoreModal;
 
 	let team1Total = 0;
@@ -30,16 +32,42 @@
 	}
 
 	function handleScoreChange(event: CustomEvent<ScoreItem>) {
-		if (score) {
-			score.score = event.detail.score;
-			score.scoreMultiplied = event.detail.scoreMultiplied;
+		if (selectedScore) {
+			selectedScore.score = event.detail.score;
+			selectedScore.scoreMultiplied = event.detail.scoreMultiplied;
 			rounds = [...rounds];
 		}
 	}
 
-	const openScoreModal = (s: ScoreItem, m: number) => {
-		score = s;
-		multiplicator = m;
+	async function handleModalClose() {
+		if (gameId && selectedRound && selectedScore) {
+			const data = {
+				gameId,
+				roundModeId: selectedRound.modeId,
+				team: selectedTeam,
+				score: selectedScore.score,
+				scoreMultiplied: selectedScore.scoreMultiplied
+			};
+
+			try {
+				const response = await fetch('./', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				});
+				const result = await response.json();
+				console.log('Score updated:', result);
+			} catch (err) {
+				console.error('Error updating score:', err);
+			}
+		}
+	}
+
+	const openScoreModal = (r: GameRound, s: ScoreItem, t: 'team1' | 'team2') => {
+		selectedRound = r;
+		selectedMultiplicator = r.multiplicator;
+		selectedScore = s;
+		selectedTeam = t;
 		scoreModalRef.open();
 	};
 </script>
@@ -61,7 +89,7 @@
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
-						on:click={() => openScoreModal(round.score1, round.multiplicator)}
+						on:click={() => openScoreModal(round, round.score1, 'team1')}
 						class="flex cursor-pointer items-center gap-2"
 					>
 						<span class="inline-block w-[3ch]">{round.score1.score}</span>
@@ -72,7 +100,7 @@
 					<!-- svelte-ignore a11y_click_events_have_key_events -->
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
 					<div
-						on:click={() => openScoreModal(round.score2, round.multiplicator)}
+						on:click={() => openScoreModal(round, round.score2, 'team2')}
 						class="flex cursor-pointer items-center gap-2"
 					>
 						<span class="inline-block w-[3ch]">{round.score2.score}</span>
@@ -109,4 +137,10 @@
 	</TableBody>
 </Table>
 
-<ScoreModal bind:this={scoreModalRef} {score} {multiplicator} on:scoreChange={handleScoreChange} />
+<ScoreModal
+	bind:this={scoreModalRef}
+	score={selectedScore}
+	multiplicator={selectedMultiplicator}
+	on:scoreChange={handleScoreChange}
+	on:close={handleModalClose}
+/>
