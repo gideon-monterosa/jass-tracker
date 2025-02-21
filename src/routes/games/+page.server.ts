@@ -1,5 +1,6 @@
 import { db } from "$lib/db";
-import type { Player } from "$lib/db/schema";
+import { gamePlayersTable, gamesTable, type Player } from "$lib/db/schema";
+import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import type { Actions } from './$types';
 
@@ -12,22 +13,44 @@ export const actions = {
     default: async ({ request }) => {
         const formData = await request.formData();
 
-        const team1 = [
-            formData.get('team1_0'),
-            formData.get('team1_1')
+        const team1Ids = [
+            Number(formData.get('team1_0')),
+            Number(formData.get('team1_1'))
         ];
-        const team2 = [
-            formData.get('team2_0'),
-            formData.get('team2_1')
+        const team2Ids = [
+            Number(formData.get('team2_0')),
+            Number(formData.get('team2_1'))
         ];
 
-        console.log('Team 1:', team1);
-        console.log('Team 2:', team2);
+        const game = await db.transaction(async (tx) => {
+            const [insertedGame] = await tx
+                .insert(gamesTable)
+                .values({})
+                .returning({ id: gamesTable.id });
 
-        // Here you can process the teams,
-        // e.g., save to a database or initiate a game.
+            for (const playerId of team1Ids) {
+                await tx.insert(gamePlayersTable).values({
+                    gameId: insertedGame.id,
+                    playerId,
+                    team: 'team1'
+                });
+            }
 
-        // Optionally return data to the client
-        return { success: true };
+            for (const playerId of team2Ids) {
+                await tx.insert(gamePlayersTable).values({
+                    gameId: insertedGame.id,
+                    playerId,
+                    team: 'team2'
+                });
+            }
+
+            return insertedGame;
+        });
+
+        if (game === undefined) {
+            return { success: false };
+        }
+
+        redirect(303, `/games/${game.id}`);
     }
 } satisfies Actions;

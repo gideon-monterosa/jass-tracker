@@ -5,6 +5,7 @@ export interface ScoreItem {
 
 export interface GameRound {
   mode: string;
+  modeId: number;
   multiplicator: number;
   score1: ScoreItem;
   score2: ScoreItem;
